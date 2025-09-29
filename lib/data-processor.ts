@@ -19,7 +19,6 @@ const calculateMetrics = (data: {
     };
 };
 
-// Определим тип для аккумулятора в Map
 type AggregationAccumulator = {
     id: string;
     name: string;
@@ -68,7 +67,6 @@ export const processData = (
     const budgetMultiplier = whatIfParams?.budgetMultiplier ?? 1;
     const conversionMultiplier = whatIfParams?.conversionMultiplier ?? 1;
 
-    // ИСПРАВЛЕНИЕ: Заменили 'any' на конкретный тип
     const aggregationMap = new Map<string, AggregationAccumulator>();
 
     filteredData.forEach(event => {
@@ -79,7 +77,7 @@ export const processData = (
             aggregationMap.set(id, { id, name, impressions: 0, clicks: 0, spend: 0, leads: 0, purchases: 0, revenue: 0 });
         }
 
-        const current = aggregationMap.get(id)!; // Добавляем '!' так как мы уверены, что значение есть
+        const current = aggregationMap.get(id)!;
         const adjustedSpend = event.spend * budgetMultiplier;
         const adjustedLeads = Math.round(event.leads * conversionMultiplier);
         const leadToPurchaseCR = event.leads > 0 ? event.purchases / event.leads : 0;

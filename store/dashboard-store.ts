@@ -35,7 +35,6 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     setDrilldownPath: (path) => set({ drilldownPath: path }),
     drilldown: (level, id, name) => {
         const currentPath = get().drilldownPath;
-        // Prevent drilling down to the same level
         const newPath = [...currentPath, { level, id, name }];
         const uniqueLevels = new Set(newPath.map(p => p.level));
         if (uniqueLevels.size === newPath.length) {
