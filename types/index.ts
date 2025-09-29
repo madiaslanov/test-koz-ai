@@ -39,6 +39,11 @@ export interface AggregatedData extends CalculatedMetrics {
 
 export type AggregationLevel = "campaign" | "channel" | "project";
 
+export interface WhatIfParams {
+    budgetMultiplier: number;
+    conversionMultiplier: number;
+}
+
 export type DrilldownPath = {
     id: string;
     name: string;

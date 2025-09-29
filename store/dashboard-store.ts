@@ -1,11 +1,6 @@
 import { create } from 'zustand';
 import { DateRange } from 'react-day-picker';
-import { DrilldownPath } from '@/types';
-
-interface WhatIfParams {
-    budgetMultiplier: number;
-    conversionMultiplier: number;
-}
+import { DrilldownPath, WhatIfParams, AggregationLevel } from '@/types';
 
 interface DashboardState {
     dateRange: DateRange | undefined;
@@ -17,7 +12,7 @@ interface DashboardState {
 
     drilldownPath: DrilldownPath;
     setDrilldownPath: (path: DrilldownPath) => void;
-    drilldown: (level: 'campaign' | 'channel' | 'project', id: string, name: string) => void;
+    drilldown: (level: AggregationLevel, id: string, name: string) => void;
     drillup: () => void;
 
     whatIfParams: WhatIfParams;
@@ -40,11 +35,18 @@ export const useDashboardStore = create<DashboardState>((set, get) => ({
     setDrilldownPath: (path) => set({ drilldownPath: path }),
     drilldown: (level, id, name) => {
         const currentPath = get().drilldownPath;
-        set({ drilldownPath: [...currentPath, { level, id, name }] });
+        // Prevent drilling down to the same level
+        const newPath = [...currentPath, { level, id, name }];
+        const uniqueLevels = new Set(newPath.map(p => p.level));
+        if (uniqueLevels.size === newPath.length) {
+            set({ drilldownPath: newPath });
+        }
     },
     drillup: () => {
         const currentPath = get().drilldownPath;
-        set({ drilldownPath: currentPath.slice(0, -1) });
+        if (currentPath.length > 0) {
+            set({ drilldownPath: currentPath.slice(0, -1) });
+        }
     },
 
     whatIfParams: {

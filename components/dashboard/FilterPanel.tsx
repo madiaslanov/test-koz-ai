@@ -12,7 +12,7 @@ export function FilterPanel() {
     const { uniqueValues } = useMarketingData();
 
     return (
-        <div className="flex flex-wrap items-center gap-4 p-4 border-b">
+        <div className="flex flex-wrap items-center gap-4 p-4 border-b bg-background">
             <Popover>
                 <PopoverTrigger asChild>
                     <Button variant={"outline"} className="w-[280px] justify-start text-left font-normal">

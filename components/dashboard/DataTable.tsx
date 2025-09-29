@@ -3,7 +3,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { AggregatedData, AggregationLevel } from "@/types";
 import { useDashboardStore } from '@/store/dashboard-store';
 import { formatCurrency, formatNumber, formatPercent } from '@/lib/utils';
-import { ArrowDown, ArrowUp } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface DataTableProps {
     data: AggregatedData[];
@@ -28,31 +28,34 @@ export function DataTable({ data, level }: DataTableProps) {
 
     const handleRowClick = (row: AggregatedData) => {
         if (level !== 'project') {
-            drilldown(level, row.id, row.name);
+            const nextLevel = level === 'campaign' ? 'channel' : 'project';
+            drilldown(nextLevel, row.id, row.name);
         }
     };
 
     return (
         <Card>
             <CardContent className="p-0">
-                <Table>
-                    <TableHeader>
-                        <TableRow>
-                            {columns.map(col => <TableHead key={col.accessorKey}>{col.header}</TableHead>)}
-                        </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                        {data.map(row => (
-                            <TableRow key={row.id} onClick={() => handleRowClick(row)} className={level !== 'project' ? "cursor-pointer hover:bg-muted/50" : ""}>
-                                {columns.map(col => (
-                                    <TableCell key={col.accessorKey}>
-                                        {col.cell ? col.cell(row[col.accessorKey as keyof AggregatedData] as number) : row[col.accessorKey as keyof AggregatedData]}
-                                    </TableCell>
-                                ))}
+                <div className="overflow-x-auto">
+                    <Table>
+                        <TableHeader>
+                            <TableRow>
+                                {columns.map(col => <TableHead key={col.accessorKey}>{col.header}</TableHead>)}
                             </TableRow>
-                        ))}
-                    </TableBody>
-                </Table>
+                        </TableHeader>
+                        <TableBody>
+                            {data.map(row => (
+                                <TableRow key={row.id} onClick={() => handleRowClick(row)} className={level !== 'project' ? "cursor-pointer hover:bg-muted/50" : ""}>
+                                    {columns.map(col => (
+                                        <TableCell key={col.accessorKey}>
+                                            {col.cell ? col.cell(row[col.accessorKey as keyof AggregatedData] as number) : String(row[col.accessorKey as keyof AggregatedData])}
+                                        </TableCell>
+                                    ))}
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </div>
             </CardContent>
         </Card>
     );
