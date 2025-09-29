@@ -8,7 +8,7 @@ import { format } from "date-fns";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function FilterPanel() {
-    const { dateRange, setDateRange, selectedManagers, setSelectedManagers, selectedCategories, setSelectedCategories, resetFilters } = useDashboardStore();
+    const { dateRange, setDateRange, setSelectedManagers, setSelectedCategories, resetFilters } = useDashboardStore();
     const { uniqueValues } = useMarketingData();
 
     return (
@@ -40,6 +40,7 @@ export function FilterPanel() {
                     <SelectValue placeholder="Менеджер" />
                 </SelectTrigger>
                 <SelectContent>
+                    <SelectItem value="all">Все</SelectItem>
                     {uniqueValues.managers.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
                 </SelectContent>
             </Select>
@@ -49,6 +50,7 @@ export function FilterPanel() {
                     <SelectValue placeholder="Категория" />
                 </SelectTrigger>
                 <SelectContent>
+                    <SelectItem value="all">Все</SelectItem>
                     {uniqueValues.categories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                 </SelectContent>
             </Select>

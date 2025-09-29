@@ -9,7 +9,6 @@ import { WhatIfAnalysis } from '@/components/dashboard/WhatIfAnalysis';
 import { Insights } from '@/components/dashboard/Insights';
 import { DrilldownBreadcrumb } from '@/components/dashboard/DrilldownBreadcrumb';
 import { formatCurrency, formatPercent } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 
 const queryClient = new QueryClient();
 

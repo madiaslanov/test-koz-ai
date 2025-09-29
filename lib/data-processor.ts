@@ -19,6 +19,19 @@ const calculateMetrics = (data: {
     };
 };
 
+// Определим тип для аккумулятора в Map
+type AggregationAccumulator = {
+    id: string;
+    name: string;
+    impressions: number;
+    clicks: number;
+    spend: number;
+    leads: number;
+    purchases: number;
+    revenue: number;
+};
+
+
 export const processData = (
     rawData: RawEvent[],
     level: AggregationLevel,
@@ -55,7 +68,8 @@ export const processData = (
     const budgetMultiplier = whatIfParams?.budgetMultiplier ?? 1;
     const conversionMultiplier = whatIfParams?.conversionMultiplier ?? 1;
 
-    const aggregationMap = new Map<string, any>();
+    // ИСПРАВЛЕНИЕ: Заменили 'any' на конкретный тип
+    const aggregationMap = new Map<string, AggregationAccumulator>();
 
     filteredData.forEach(event => {
         const id = event[`${level}_id`];
@@ -65,11 +79,11 @@ export const processData = (
             aggregationMap.set(id, { id, name, impressions: 0, clicks: 0, spend: 0, leads: 0, purchases: 0, revenue: 0 });
         }
 
-        const current = aggregationMap.get(id);
+        const current = aggregationMap.get(id)!; // Добавляем '!' так как мы уверены, что значение есть
         const adjustedSpend = event.spend * budgetMultiplier;
-        const adjustedLeads = event.leads * conversionMultiplier;
+        const adjustedLeads = Math.round(event.leads * conversionMultiplier);
         const leadToPurchaseCR = event.leads > 0 ? event.purchases / event.leads : 0;
-        const adjustedPurchases = adjustedLeads * leadToPurchaseCR;
+        const adjustedPurchases = Math.round(adjustedLeads * leadToPurchaseCR);
         const avgRevenuePerPurchase = event.purchases > 0 ? event.revenue / event.purchases : 0;
         const adjustedRevenue = adjustedPurchases * avgRevenuePerPurchase;
 
@@ -88,21 +102,25 @@ export const processData = (
 };
 
 export const generateInsights = (data: AggregatedData[], level: AggregationLevel): string[] => {
-    const insights: string[] = [];
     if (data.length === 0) return ["Нет данных для анализа."];
+
+    const insights: string[] = [];
 
     const sortedByRevenue = [...data].sort((a, b) => b.revenue - a.revenue);
     const sortedByRoas = [...data].sort((a, b) => b.roas - a.roas);
 
-    insights.push(`Самая прибыльная ${level === 'campaign' ? 'кампания' : (level === 'channel' ? 'канал' : 'проект')}: "${sortedByRevenue[0].name}" с выручкой ${sortedByRevenue[0].revenue.toFixed(0)} руб.`);
-    insights.push(`Самый высокий ROAS у "${sortedByRoas[0].name}" (${sortedByRoas[0].roas.toFixed(2)}x).`);
+    if(sortedByRevenue.length > 0) {
+        insights.push(`Самая прибыльная ${level === 'campaign' ? 'кампания' : (level === 'channel' ? 'канал' : 'проект')}: "${sortedByRevenue[0].name}" с выручкой ${sortedByRevenue[0].revenue.toFixed(0)} руб.`);
+        insights.push(`Самый высокий ROAS у "${sortedByRoas[0].name}" (${sortedByRoas[0].roas.toFixed(2)}x).`);
+    }
 
     const unprofitable = data.filter(d => d.roas < 1 && d.spend > 0);
     if (unprofitable.length > 0) {
         insights.push(`Обнаружено ${unprofitable.length} убыточных ${unprofitable.length > 1 ? 'элементов' : 'элемент'} (ROAS < 1). Стоит пересмотреть: ${unprofitable.map(u => u.name).slice(0,2).join(', ')}.`);
     }
 
-    const highCpl = data.filter(d => d.cpl > (data.reduce((acc, i) => acc + i.cpl, 0) / data.length) * 1.5);
+    const avgCpl = data.reduce((acc, i) => acc + i.cpl, 0) / data.length;
+    const highCpl = data.filter(d => d.cpl > avgCpl * 1.5);
     if (highCpl.length > 0) {
         insights.push(`Стоимость лида значительно выше средней у: ${highCpl.map(u => u.name).slice(0,2).join(', ')}.`);
     }
